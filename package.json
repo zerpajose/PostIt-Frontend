@@ -9,9 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^34.2.0",
+    "@ckeditor/ckeditor5-react": "^5.0.2",
+    "axios": "^0.27.2",
+    "draft-js": "^0.11.7",
+    "ethers": "^5.6.9",
+    "form-data": "^4.0.0",
     "next": "12.2.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-draft-wysiwyg": "^1.15.0",
+    "web3-token": "^0.2.9",
+    "web3modal": "^1.9.8"
   },
   "devDependencies": {
     "eslint": "8.20.0",
