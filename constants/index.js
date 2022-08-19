@@ -1,4 +1,4 @@
-export const POSTIT_CONTRACT_ADDRESS = "0x595521da4cDE85f68F1875801d84f9c8FA8e057A";
+export const POSTIT_CONTRACT_ADDRESS = "0x0A6cc0e975E4b760cb1fdaA1E1ee01a06B324F0d";
 export const abi = [
     {
       "inputs": [],
@@ -239,6 +239,25 @@ export const abi = [
       "inputs": [
         {
           "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "name": "getNftsIdsFromAddress",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "owner",
           "type": "address"
         },
@@ -299,6 +318,30 @@ export const abi = [
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "postsPerAddress",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",

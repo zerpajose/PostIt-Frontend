@@ -1,5 +1,6 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
+import { Alert, AlertTitle, TextField, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from "@mui/material";
 import Web3Modal from "web3modal";
 import { providers, Contract } from "ethers";
 import { useEffect, useRef, useState } from "react";
@@ -253,7 +254,7 @@ export default function Home() {
       setIsAllowed(response.data.is_allowed);
       setContractOwner(response.data.owner_address);
 
-      if(!response.data.is_owner){
+      if(!response.data.is_allowed){
         setMessage("You are not allowed to mint a PostIt");
       }
     })
