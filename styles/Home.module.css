@@ -31,16 +31,22 @@
   font-size: 1.2rem;
 }
 
+.wallet{
+  display: flex;
+  justify-content: right;
+  align-items: right; 
+}
+
 .button {
   border-radius: 4px;
-  background-color: blue;
+  background-color: grey;
   border: none;
   color: #ffffff;
   font-size: 15px;
   padding: 20px;
   width: 200px;
   cursor: pointer;
-  margin-bottom: 2%;
+  margin: 2%;
 }
 @media (max-width: 1000px) {
   .main {

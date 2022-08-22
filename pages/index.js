@@ -15,8 +15,6 @@ export default function Home() {
   const [joinedWhitelist, setJoinedWhitelist] = useState(false);
   // loading is set to true when we are waiting for a transaction to get mined
   const [loading, setLoading] = useState(false);
-  // numberOfWhitelisted tracks the number of addresses's whitelisted
-  const [numberOfWhitelisted, setNumberOfWhitelisted] = useState(0);
   // for localstorage
   const [items, setItems] = useState("");
   // form
@@ -29,6 +27,11 @@ export default function Home() {
   const [isAllowed, setIsAllowed] = useState(false);
 
   const [addressSignedIn, setAddressSignedIn] = useState("");
+
+  const [data, setData] = useState([]);
+  const [idsByAddress, setIdsByAddress] = useState([]);
+  const [contents, setContents] = useState([]);
+  
 
   const [contractOwner, setContractOwner] = useState("");
   // Create a reference to the Web3 Modal (used for connecting to Metamask) which persists as long as the page is open
@@ -86,8 +89,7 @@ export default function Home() {
       // wait for the transaction to get mined
       await tx.wait();
       setLoading(false);
-      // get the updated number of addresses in the whitelist
-      await getNumberOfWhitelisted();
+      
       setJoinedWhitelist(true);
     } catch (err) {
       console.error(err);
@@ -95,49 +97,55 @@ export default function Home() {
   };
 
   /**
-   * getNumberOfWhitelisted:  gets the number of whitelisted addresses
+   * getIdsByAddress:  gets the ids from an address
    */
-  const getNumberOfWhitelisted = async () => {
+  const getIdsByAddress = async () => {
     try {
       // Get the provider from web3Modal, which in our case is MetaMask
       // No need for the Signer here, as we are only reading state from the blockchain
       const provider = await getProviderOrSigner();
       // We connect to the Contract using a Provider, so we will only
       // have read-only access to the Contract
-      const whitelistContract = new Contract(
-        POSTIT_CONTRACT_ADDRESS,
-        abi,
-        provider
-      );
+      const postItContract = new Contract(POSTIT_CONTRACT_ADDRESS, abi, provider);
       // call the numAddressesWhitelisted from the contract
-      const _numberOfWhitelisted = await whitelistContract.numAddressesWhitelisted();
-      setNumberOfWhitelisted(_numberOfWhitelisted);
+      const _idsByAddress = await postItContract.getNftsIdsFromAddress(addressSignedIn);
+
+      setIdsByAddress(_idsByAddress);
+
     } catch (err) {
       console.error(err);
     }
   };
 
   /**
-   * checkIfAddressInWhitelist: Checks if the address is in whitelist
+   * getIdsByAddress:  gets the ids from an address
    */
-  const checkIfAddressInWhitelist = async () => {
+  const getContentNfts = async (ids) => {
+
     try {
-      // We will need the signer later to get the user's address
-      // Even though it is a read transaction, since Signers are just special kinds of Providers,
-      // We can use it in it's place
-      const signer = await getProviderOrSigner(true);
-      const whitelistContract = new Contract(
-        POSTIT_CONTRACT_ADDRESS,
-        abi,
-        signer
-      );
-      // Get the address associated to the signer which is connected to  MetaMask
-      const address = await signer.getAddress();
-      // call the whitelistedAddresses from the contract
-      const _joinedWhitelist = await whitelistContract.whitelistedAddresses(
-        address
-      );
-      setJoinedWhitelist(_joinedWhitelist);
+      // Get the provider from web3Modal, which in our case is MetaMask
+      // No need for the Signer here, as we are only reading state from the blockchain
+      const provider = await getProviderOrSigner();
+
+      const postItContract = new Contract(POSTIT_CONTRACT_ADDRESS, abi, provider);
+
+      let _contents = [];
+      
+      for (var i = 0; i < ids.length; i++) {
+        
+        let _uri = await postItContract.tokenURI(ids[i].toNumber());
+        
+        let response = await fetch(_uri);
+
+        if(!response.ok)
+          throw new Error(response.statusText);
+
+        let json = await response.json();
+        _contents.push(json);
+      }
+
+      setContents(_contents);
+
     } catch (err) {
       console.error(err);
     }
@@ -316,6 +324,37 @@ export default function Home() {
     }
   };
 
+  
+  const setActualData = (e) => {
+    try {
+      e.preventDefault();
+      console.log(e.target);
+
+      // for collecting siblings
+      let siblings = []; 
+      // if no parent, return no sibling
+      if(!e.target.parentNode) {
+        return siblings;
+      }
+      // first child of the parent node
+      let sibling  = e.target.parentNode.firstChild;
+      
+      // collecting siblings
+      while (sibling) {
+        if (sibling.nodeType === 1 && sibling !== e.target) {
+          siblings.push(sibling);
+        }
+        sibling = sibling.nextSibling;
+      }
+      
+      setName(siblings[0].innerText);
+      setDescription(siblings[1].innerText);
+      
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   /*
     connectWallet: Connects the MetaMask wallet
   */
@@ -326,8 +365,6 @@ export default function Home() {
       await getProviderOrSigner();
       setWalletConnected(true);
 
-      checkIfAddressInWhitelist();
-      getNumberOfWhitelisted();
     } catch (err) {
       console.error(err);
     }
@@ -353,12 +390,23 @@ export default function Home() {
           return (
             <div>
               <form onSubmit={handleNewPost}>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} />
-                <textarea value={description} onChange={e => setDescription(e.target.value)} />
-                
-                <button type="submit">PostIt</button>
+                <TextField value={name} onChange={e => setName(e.target.value)} id="filled-basic" label="Name" variant="filled"></TextField>
+                <TextField value={description} onChange={e => setDescription(e.target.value)} label="Description" id="filled-basic" variant="filled" multiline rows={4} maxRows={4}/>
+                <button className={styles.button} type="submit">PostIt</button>
                 {message ? <p>{message}</p> : null}
               </form>
+              <hr></hr>
+
+              {contents.map((item, index) => (
+                <div key={index}>
+                  <p className={styles.title}>{item.name}</p>
+                  <p className={styles.description}>{item.attributes[0].value}</p>
+                  <button onClick={setActualData} className={styles.button}>Edit</button>
+                  <hr></hr>
+                </div>
+              ))
+              }
+
             </div>
           );
         } else if (loading) {
@@ -400,11 +448,24 @@ export default function Home() {
     }
   }, [walletConnected]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      await getIdsByAddress();
+
+      await getContentNfts(idsByAddress);
+    }
+
+    // call the function
+    fetchData().catch(console.error);
+    
+
+  }, []);
+
   return (
     <div>
       <Head>
-        <title>Whitelist Dapp</title>
-        <meta name="description" content="Whitelist-Dapp" />
+        <title>PostIt</title>
+        <meta name="description" content="PostIt-Dapp" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className={styles.main}>
@@ -413,13 +474,11 @@ export default function Home() {
           <div className={styles.description}>
             Manage your sticky notes as NFT's.
           </div>
-          <div className={styles.description}>
-            {numberOfWhitelisted} have already joined the Whitelist
-          </div>
-
           {renderButton()}
         </div>
+
         <div>
+          <p className={styles.wallet}>{"Wallet Connected 0x.."+addressSignedIn.slice(-5)}</p>
           <img className={styles.image} src="./logo.png" />
         </div>
       </div>
